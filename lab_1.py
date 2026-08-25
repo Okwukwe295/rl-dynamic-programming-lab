@@ -199,15 +199,19 @@ def main():
     env.render()
     print("")
 
-    # TODO: generate random policy
+    # TODO: generate random policy-done
+    random_policy = np.ones([env.observation_space.n, env.action_space.n]) / env.action_space.n
 
     print("*" * 5 + " Policy evaluation " + "*" * 5)
     print("")
 
-    # TODO: evaluate random policy
-    v = []
+    # TODO: evaluate random policy-done
+    v = policy_evaluation(env, random_policy)
+    # TODO: print state value for each state, as grid shape-done
+    print(v.reshape(env.shape))
+    print("")
 
-    # TODO: print state value for each state, as grid shape
+    
 
     # Test: Make sure the evaluated policy is what we expected
     expected_v = np.array([-106.81, -104.81, -101.37, -97.62, -95.07,
@@ -219,12 +223,16 @@ def main():
 
     print("*" * 5 + " Policy iteration " + "*" * 5)
     print("")
-    # TODO: use  policy improvement to compute optimal policy and state values
-    policy, v = [], []  # call policy_iteration
+    # TODO: use  policy improvement to compute optimal policy and state values-done
+    policy, v = policy_iteration(env)
 
-    # TODO Print out best action for each state in grid shape
+    # TODO Print out best action for each state in grid shape -done
+    print(np.argmax(policy, axis=1).reshape(env.shape))
+    print("")
 
-    # TODO: print state value for each state, as grid shape
+    # TODO: print state value for each state, as grid shape-done
+    print(v.reshape(env.shape))
+    print("")
 
     # Test: Make sure the value function is what we expected
     expected_v = np.array([-8., -7., -6., -5., -4.,
@@ -236,12 +244,16 @@ def main():
 
     print("*" * 5 + " Value iteration " + "*" * 5)
     print("")
-    # TODO: use  value iteration to compute optimal policy and state values
-    policy, v = [], []  # call value_iteration
+    # TODO: use  value iteration to compute optimal policy and state values-done
+    policy, v = value_iteration(env) # call value_iteration
 
-    # TODO Print out best action for each state in grid shape
+    # TODO Print out best action for each state in grid shape-done
+    print(np.argmax(policy, axis=1).reshape(env.shape))
+    print("")
 
     # TODO: print state value for each state, as grid shape
+    print(v.reshape(env.shape))
+    print("")
 
     # Test: Make sure the value function is what we expected
     expected_v = np.array([-8., -7., -6., -5., -4.,
