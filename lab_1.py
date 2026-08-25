@@ -1,9 +1,9 @@
 ###
 # Group Members
-# Name:Student Number
-# Name:Student Number
-# Name:Student Number
-# Name:Student Number
+# Okwukwechukwu Mbajiorgu: 2430639
+# Royal Goronga: 3014090
+# Lulama Unity Hlungwani:3127972
+# Adivhaho Nevondo:2580619
 ###
 
 import numpy as np
@@ -30,7 +30,29 @@ def policy_evaluation(env, policy, discount_factor=1.0, theta=0.00001):
     Returns:
         Vector of length env.observation_space.n representing the value function.
     """
-    raise NotImplementedError
+    states = env.observation_space.n
+    V = np.zeros(states)
+
+    while True:
+        delta = 0
+        for s in range(states):
+            v = V[s]
+            new_v = 0
+
+            for a, action_prob in enumerate(policy[s]):
+                for prob, next_state, reward, done in env.P[s][a]:
+
+                    next_val = 0 if done else V[next_state]  #Terminal state
+                    new_v += action_prob * prob * (reward + discount_factor * next_val)
+
+            V[s] = new_v
+
+            delta = max(delta, abs(v - V[s]))
+
+        if delta < theta:
+            break
+
+    return V
 
 
 def policy_iteration(env, policy_evaluation_fn=policy_evaluation, discount_factor=1.0):
@@ -62,9 +84,46 @@ def policy_iteration(env, policy_evaluation_fn=policy_evaluation, discount_facto
         Returns:
             A vector of length env.action_space.n containing the expected value of each action.
         """
-        raise NotImplementedError
+        action_values = np.zeros(env.action_space.n)
+        
+        for action in range(env.action_space.n):
+            for probability, next_state, reward, done in env.P[state][action]:
+                next_val = 0 if done else V[next_state]
+                action_values[action] += probability * (
+                    reward + discount_factor * next_val
+                )
 
-    raise NotImplementedError
+        return action_values
+
+    policy = np.ones(
+        [env.observation_space.n, env.action_space.n]
+    ) / env.action_space.n
+
+    while True:
+
+        V = policy_evaluation_fn(env,policy,discount_factor)
+
+        policy_stable = True
+        new_policy = np.zeros_like(policy)
+
+        for state in range(env.observation_space.n):
+
+            action_values = one_step_lookahead(state, V)  # Store the expected value of each action
+
+            best_action = np.argmax(action_values)
+
+            new_policy[state, best_action] = 1.0
+
+            old_action = np.argmax(policy[state])
+            # If the best action differs from the previous action,
+            # the policy has not yet converged
+            if old_action != best_action:
+                policy_stable = False
+
+        policy = new_policy
+
+        if policy_stable:
+            return policy, V
 
 
 def value_iteration(env, theta=0.0001, discount_factor=1.0):
@@ -95,10 +154,41 @@ def value_iteration(env, theta=0.0001, discount_factor=1.0):
         Returns:
             A vector of length env.action_space.n containing the expected value of each action.
         """
-        raise NotImplementedError
+        action_values = np.zeros(env.action_space.n)
+        
+        for action in range(env.action_space.n):
+            for probability, next_state, reward, done in env.P[state][action]:
+                next_val = 0 if done else V[next_state]
+                action_values[action] += probability * (
+                    reward + discount_factor * next_val
+                )
 
-    raise NotImplementedError
+        return action_values
+    # For every state, calculate the value of all four actions, 
+    # take the best one, update the state's value, 
+    # and keep repeating until the values barely change.
+    V = np.zeros(env.observation_space.n)
 
+    while True:
+        delta = 0
+        for state in range(env.observation_space.n):
+
+            action_values = one_step_lookahead(state, V)  # Store the expected value of each action
+
+            best_action_value = np.max(action_values)
+
+            delta = max(delta, abs(best_action_value - V[state]))
+
+            V[state] = best_action_value
+
+        if delta < theta:
+            break
+
+    policy = np.zeros([env.observation_space.n, env.action_space.n])
+    for state in range(env.observation_space.n):
+        policy[state, np.argmax(one_step_lookahead(state, V))] = 1.0
+
+    return policy, V
 
 def main():
     # Create Gridworld environment with size of 5 by 5, with the goal at state 24. Reward for getting to goal state is 0, and each step reward is -1

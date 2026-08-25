@@ -131,7 +131,6 @@ def main():
     env.render()
     print("")
 
-    # TODO: generate random policy
     num_states = env.observation_space.n
     num_actions = env.action_space.n
 
